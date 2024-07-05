@@ -32,6 +32,9 @@ with container_data:
         SELECT total_liabilities FROM table
         '''
         st.code(code, language='sql')
+    
+    with tab3:
+        st.error('error here')
 
 if __name__ == '__main__':
     load_dotenv()
