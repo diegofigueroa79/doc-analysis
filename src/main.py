@@ -1,4 +1,3 @@
-from dotenv import load_dotenv
 import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 import pandas as pd
@@ -42,6 +41,3 @@ with container_data:
             row = [t[0], value, value]
             results_df.loc[len(results_df.index)] = row
         st.dataframe(results_df, width=700, height=700)
-
-if __name__ == '__main__':
-    load_dotenv()
