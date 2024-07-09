@@ -24,7 +24,7 @@ with container_data:
     tab1, tab2, tab3 = st.tabs(["Textract Data", "Generated SQL", "Data Comparisons"])
 
     with tab1:
-        df = pd.read_csv("balance-sheet-1.csv", sep='\t', names=["col1", "col2"])
+        df = pd.read_csv("balance-sheet-1.csv", sep=',', names=["col1", "col2"])
         st.dataframe(df, width=700, height=700)
 
     with tab2:
