@@ -5,7 +5,21 @@ import boto3
 
 
 def extract_document():
-    document = None
+    textract = boto3.client('textract', region_name='<region>')
+    q = tc.Query(text="Choose from the three types to answer the question: balance sheet, income, cash flow. What type is the document?", pages=["1", "2", "3"])
+    q2 = tc.Query(text="What is the company name?", pages=["1", "2", "3"])
+    adapter = tc.Adapter(adapter_id="<textract adapter id>", version="1", pages=["1", "2", "3"])
+    
+    result = tc.call_textract(
+        input_document="<bucket>combined-statements.pdf",
+        queries_config=tc.QueriesConfig(queries=[q,q2]),
+        adapters_config=tc.AdaptersConfig(adapters=[adapter]),
+        features=[tc.Textract_Features.QUERIES, tc.Textract_Features.TABLES, tc.Textract_Features.LAYOUT],
+        force_async_api=True,
+        boto3_textract_client=textract
+    )
+    
+    document = response_parser.parse(result)
     return document
 
 def build_tables_dict(document):
