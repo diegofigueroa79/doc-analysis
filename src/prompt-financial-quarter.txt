@@ -1,0 +1,5 @@
+Instructions: Match the date to a financial quarter. Choose only from (first_quarter, second_quarter, third_quarter, fourth_quarter).
+Provide the output in between <output> tags.
+<date>
+{date}
+</date>

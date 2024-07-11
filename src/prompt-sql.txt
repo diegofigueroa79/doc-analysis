@@ -1,5 +1,6 @@
 Instructions: Use only the field names provided in the <content> tags to perform your task.
 <content>
+{content}
 </content>
 
 <schema>
@@ -45,6 +46,7 @@ total_liabilities_stockholders_equity
 </schema>
 
 Task: Write SQL queries that retrieve values for each field from the schema provided.
+Each SQL query should have a condition WHERE company_name = '{company_name}' AND financial_quarter = '{financial_quarter}'.
 Then match one SQL query to the field from the content provided.
 Provided the response as a tuple output as follows:
 ("content field", "SQL Query")
