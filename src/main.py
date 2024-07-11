@@ -40,4 +40,18 @@ with container_data:
             value = df.loc[df['col1'] == t[0]].values[0][1]
             row = [t[0], value, value]
             results_df.loc[len(results_df.index)] = row
-        st.dataframe(results_df, width=700, height=700)
+        
+        # add some wrong values for demo
+        results_df.iloc[4,2] = '4,000'
+        results_df.iloc[13,2] = '50,000'
+        results_df.iloc[16,2] = '75,000'
+
+        # highlight mismatched values
+        def custom_style(row):
+            if row.values[-1] != row.values[-2]:
+                color = 'tomato'
+                return ['background-color: %s' % color]*len(row.values)
+            else:
+                return ['']*len(row.values)
+
+        st.dataframe(results_df.style.apply(custom_style, axis=1), width=700, height=700)
