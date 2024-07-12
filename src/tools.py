@@ -13,7 +13,7 @@ QUERY_2 = "What is the company name?"
 QUERY_3 = "What is the month or date or year ended?"
 
 def extract_document():
-    textract = boto3.client('textract', region_name='<region>')
+    textract = boto3.client('textract', region_name=os.getenv('AWS_REGION'))
     q = tc.Query(text=QUERY_1, pages=["*"])
     q2 = tc.Query(text=QUERY_2, pages=["*"])
     q3 = tc.Query(text=QUERY_3, pages=["*"])
