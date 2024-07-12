@@ -31,17 +31,17 @@ def extract_document():
     document = response_parser.parse(result)
     return document
 
-def build_tables_dict(document, llm):
+def build_tables_dict(llm, document):
     doc_tables = {}
-    financial_quarter = get_financial_quarter(llm, [q.result for q in document.queries if q.query == QUERY_3][0])
+    financial_quarter = get_financial_quarter(llm, str([q.result for q in document.queries if q.query == QUERY_3][0]))
     
     for page in document.pages:
         # what is the doc type and company name?
-        company_name = [q.result for q in document.queries if q.query == QUERY_2][0]
+        company_name = str([q.result for q in document.queries if q.query == QUERY_2][0])
         if company_name not in doc_tables.keys():
             doc_tables[company_name] = {}
             doc_tables['financial_quarter'] = financial_quarter
-        doc_type = [q.result for q in document.queries if q.query == QUERY_1][0]
+        doc_type = str([q.result for q in document.queries if q.query == QUERY_1][0])
         if doc_type not in doc_tables.keys():
             doc_tables[company_name][doc_type] = []
         # extract tables
@@ -103,3 +103,11 @@ def connect_to_bedrock():
 
 if __name__ == '__main__':
     load_dotenv()
+    llm = connect_to_bedrock()
+    document = extract_document()
+    tables = build_tables_dict(llm, document)
+
+    # grab demo data
+    #result = tables['Example Corporation']['Balance Sheet']
+
+    sql_list = generate_sql(llm, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
