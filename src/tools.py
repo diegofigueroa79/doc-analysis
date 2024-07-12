@@ -93,7 +93,7 @@ def generate_sql(llm, pd_table, db_schema, company_name, financial_quarter):
 
 def connect_to_bedrock():
     boto_session = boto3.Session()
-    bedrock_runtime = boto_session.client("bedrock-runtime", region_name="us-east-1")
+    bedrock_runtime = boto_session.client("bedrock-runtime", region_name=os.getenv('AWS_REGION'))
 
     modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
