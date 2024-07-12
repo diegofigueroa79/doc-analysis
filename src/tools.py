@@ -2,6 +2,7 @@ import textractcaller as tc
 from textractor.parsers import response_parser
 from langchain_aws import ChatBedrock
 from langchain_core.prompts import PromptTemplate
+from dotenv import load_dotenv
 import boto3
 import os
 import re
@@ -98,3 +99,7 @@ def connect_to_bedrock():
 
     llm = ChatBedrock(model_id=modelId, client=bedrock_runtime, model_kwargs={"temperature": 0,"top_k":250,"max_tokens":3000})
     return llm
+
+
+if __name__ == '__main__':
+    load_dotenv()
