@@ -20,7 +20,7 @@ def extract_document():
     adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"])
     
     result = tc.call_textract(
-        input_document=f"{os.getenv("S3_BUCKET_URL")}balance-sheet-1.pdf",
+        input_document=f"{os.getenv('S3_BUCKET_URL')}balance-sheet-1.pdf",
         queries_config=tc.QueriesConfig(queries=[q,q2,q3]),
         adapters_config=tc.AdaptersConfig(adapters=[adapter]),
         features=[tc.Textract_Features.QUERIES, tc.Textract_Features.TABLES, tc.Textract_Features.LAYOUT],
