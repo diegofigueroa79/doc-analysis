@@ -31,9 +31,9 @@ def extract_document():
     document = response_parser.parse(result)
     return document
 
-def build_tables_dict(document):
+def build_tables_dict(document, llm):
     doc_tables = {}
-    financial_quarter = get_financial_quarter([q.result for q in document.queries if q.query == QUERY_3][0])
+    financial_quarter = get_financial_quarter(llm, [q.result for q in document.queries if q.query == QUERY_3][0])
     
     for page in document.pages:
         # what is the doc type and company name?
