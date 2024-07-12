@@ -3,6 +3,7 @@ from textractor.parsers import response_parser
 from langchain_aws import ChatBedrock
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
+import pandas as pd
 import boto3
 import os
 import re
@@ -108,6 +109,7 @@ if __name__ == '__main__':
     tables = build_tables_dict(llm, document)
 
     # grab demo data
-    #result = tables['Example Corporation']['Balance Sheet']
+    result = pd.concat(tables['Example Corporation']['Balance Sheet'])
+    result.reset_index(drop=True)
 
-    #sql_list = generate_sql(llm, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
+    #sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
