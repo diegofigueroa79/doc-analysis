@@ -55,9 +55,9 @@ def get_financial_quarter(llm, date):
     template_text=open('prompt-financial-quarter.txt',"r").read()
     template = PromptTemplate.from_template(template_text)
     # format prompt with table and schema
-    template.invoke(input={'date': date})
+    prompt = template.invoke(input={'date': date})
     # call llm
-    response = llm.invoke(template)
+    response = llm.invoke(prompt)
     content = extract_output_text(response.content)
     return content
 
@@ -84,9 +84,9 @@ def generate_sql(llm, pd_table, db_schema, company_name, financial_quarter):
     template_text=open('prompt-sql.txt',"r").read()
     template = PromptTemplate.from_template(template_text)
     # format prompt with table and schema
-    template.invoke(input={'content': pd_table, 'company_name': company_name, 'financial_quarter': financial_quarter})
+    prompt = template.invoke(input={'content': pd_table, 'company_name': company_name, 'financial_quarter': financial_quarter})
     # call llm
-    response = llm.invoke(template)
+    response = llm.invoke(prompt)
     content = extract_output_text(response.content)
     sql_tuples_list = parse_tuples(content)
     return sql_tuples_list
