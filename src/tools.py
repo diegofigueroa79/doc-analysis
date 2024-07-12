@@ -110,4 +110,4 @@ if __name__ == '__main__':
     # grab demo data
     #result = tables['Example Corporation']['Balance Sheet']
 
-    sql_list = generate_sql(llm, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
+    #sql_list = generate_sql(llm, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
