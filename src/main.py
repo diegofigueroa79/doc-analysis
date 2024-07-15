@@ -19,7 +19,7 @@ with container_data:
 
     st.markdown("Document Type: `Balance Sheet`")
     st.markdown("Company Name: `Example Corporation`")
-    st.markdown("Financial Quarter: `December 31, 2023`")
+    st.markdown("Financial Quarter: `Fourth Quarter`")
 
     tab1, tab2, tab3 = st.tabs(["Textract Data", "Generated SQL", "Data Comparisons"])
 
@@ -28,6 +28,7 @@ with container_data:
         st.dataframe(df, width=700, height=700)
 
     with tab2:
+        st.markdown("*Individual SQL statements for demo purposes*")
         tuples = getsql()
         code = ""
         for t in tuples:

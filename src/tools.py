@@ -73,7 +73,7 @@ def extract_output_text(input_text):
         return None
 
 def parse_tuples(input_string):
-    input_string.replace('"', '')
+    input_string = input_string.replace('"', '')
     # Remove leading/trailing whitespace and split by newline
     lines = input_string.strip().split('\n')
     # Parse each line as a tuple
@@ -108,8 +108,12 @@ if __name__ == '__main__':
     document = extract_document()
     tables = build_tables_dict(llm, document)
 
-    # grab demo data
+    # grab demo data and concat into one table
     result = pd.concat(tables['Example Corporation']['Balance Sheet'])
-    result.reset_index(drop=True)
+    result = result.reset_index(drop=True)
 
-    #sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
+    # get list of mapped sql statments as tuples
+    sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
+
+    # execute sql statments with database
+    # return one final table
