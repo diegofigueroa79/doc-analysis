@@ -32,7 +32,7 @@ with container_data:
         tuples = getsql()
         code = ""
         for t in tuples:
-            code += t[1] + '\n'
+            code += t[1] + '\n\n'
         st.code(code, language='sql')
     
     with tab3:
