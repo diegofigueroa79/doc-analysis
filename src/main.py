@@ -21,7 +21,7 @@ with container_data:
     st.markdown("Company Name: `Example Corporation`")
     st.markdown("Financial Quarter: `Fourth Quarter`")
 
-    tab1, tab2, tab3 = st.tabs(["Textract Data", "Generated SQL", "Data Comparisons"])
+    tab1, tab2, tab3 = st.tabs(["Extracted Data", "Generated SQL", "Data Comparisons"])
 
     with tab1:
         df = pd.read_csv("balance-sheet-1.csv", sep=',', names=["col1", "col2"])
