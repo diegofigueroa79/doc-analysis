@@ -48,7 +48,6 @@ def build_tables_dict(llm, document):
         company_name = str([q.result for q in document.queries if q.query == QUERY_2][0])
         if company_name not in doc_tables.keys():
             doc_tables[company_name] = {}
-            doc_tables['financial_quarter'] = financial_quarter
         doc_type = str([q.result for q in document.queries if q.query == QUERY_1][0])
         if doc_type not in doc_tables.keys():
             doc_tables[company_name][doc_type] = []
@@ -56,7 +55,7 @@ def build_tables_dict(llm, document):
         for table in page.tables:
             doc_tables[company_name][doc_type].append(table.to_pandas())
 
-    return doc_tables
+    return doc_tables, financial_quarter
 
 def get_financial_quarter(llm, date):
     # get prompt
@@ -116,12 +115,12 @@ def main():
     return tables
 
 if __name__ == '__main__':
-    tables = main()
+    tables, financial_quarter = main()
 
     for company in tables:
         print(f"TABLES FOR {company}\n\n")
-        for doctype in company:
-            result = pd.concat(company[doctype])
+        for doctype in tables[company]:
+            result = pd.concat(tables[company][doctype])
             result = result.reset_index(drop=True)
             print(f"DOCUMENT TYPE: {doctype}\n")
             print(result)
