@@ -119,7 +119,7 @@ if __name__ == '__main__':
     result = result.reset_index(drop=True)
 
     # get list of mapped sql statments as tuples
-    sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
+    sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, db_schema=None, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
 
     # execute sql statments with database
     # return one final table
