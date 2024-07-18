@@ -12,7 +12,7 @@ import re
 import argparse
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-a", "--adapter")
+parser.add_argument("-a", "--adapter", default="False")
 parser.add_argument("-f", "--filename", default="balance-sheet-1.pdf")
 args = parser.parse_args()
 
