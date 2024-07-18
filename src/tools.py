@@ -9,6 +9,12 @@ import os
 import re
 
 
+import argparse
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-a", "--adapter")
+args = parser.parse_args()
+
 QUERY_1 = "Choose from the three types to answer the question: balance sheet, income, cash flow. What type is the document?"
 QUERY_2 = "What is the company name?"
 QUERY_3 = "What is the month or date or year ended?"
@@ -18,12 +24,12 @@ def extract_document():
     q = tc.Query(text=QUERY_1, pages=["*"])
     q2 = tc.Query(text=QUERY_2, pages=["*"])
     q3 = tc.Query(text=QUERY_3, pages=["*"])
-    adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"])
+    adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"]) if args.adapter == 'True' else None
     
     result = tc.call_textract(
         input_document=f"{os.getenv('S3_BUCKET_URL')}balance-sheet-1.pdf",
         queries_config=tc.QueriesConfig(queries=[q,q2,q3]),
-        adapters_config=tc.AdaptersConfig(adapters=[adapter]),
+        adapters_config=tc.AdaptersConfig(adapters=[adapter]) if args.adapter == 'True' else None,
         features=[tc.Textract_Features.QUERIES, tc.Textract_Features.TABLES, tc.Textract_Features.LAYOUT],
         force_async_api=True,
         boto3_textract_client=textract
