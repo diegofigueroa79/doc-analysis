@@ -13,13 +13,14 @@ import argparse
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-a", "--adapter")
+parser.add_argument("-f", "--filename", default="balance-sheet-1.pdf")
 args = parser.parse_args()
 
 QUERY_1 = "Choose from the three types to answer the question: balance sheet, income, cash flow. What type is the document?"
 QUERY_2 = "What is the company name?"
 QUERY_3 = "What is the month or date or year ended?"
 
-def extract_document():
+def extract_document(filename):
     textract = boto3.client('textract', region_name=os.getenv('AWS_REGION'))
     q = tc.Query(text=QUERY_1, pages=["*"])
     q2 = tc.Query(text=QUERY_2, pages=["*"])
@@ -27,7 +28,7 @@ def extract_document():
     adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"]) if args.adapter == 'True' else None
     
     result = tc.call_textract(
-        input_document=f"{os.getenv('S3_BUCKET_URL')}balance-sheet-1.pdf",
+        input_document=f"{os.getenv('S3_BUCKET_URL')}{filename}",
         queries_config=tc.QueriesConfig(queries=[q,q2,q3]),
         adapters_config=tc.AdaptersConfig(adapters=[adapter]) if args.adapter == 'True' else None,
         features=[tc.Textract_Features.QUERIES, tc.Textract_Features.TABLES, tc.Textract_Features.LAYOUT],
@@ -107,17 +108,27 @@ def connect_to_bedrock():
     llm = ChatBedrock(model_id=modelId, client=bedrock_runtime, model_kwargs={"temperature": 0,"top_k":250,"max_tokens":3000})
     return llm
 
-
-if __name__ == '__main__':
+def main():
     load_dotenv()
     llm = connect_to_bedrock()
-    document = extract_document()
+    document = extract_document(filename=args.filename)
     tables = build_tables_dict(llm, document)
+    return tables
 
+if __name__ == '__main__':
+    tables = main()
+
+    for company in tables:
+        print(f"TABLES FOR {company}\n\n")
+        for doctype in company:
+            result = pd.concat(company[doctype])
+            result = result.reset_index(drop=True)
+            print(f"DOCUMENT TYPE: {doctype}\n")
+            print(result)
     # grab demo data and concat into one table
-    result = pd.concat(tables['Example Corporation']['Balance Sheet'])
-    result = result.reset_index(drop=True)
-    print(result)
+    #result = pd.concat(tables['Example Corporation']['Balance Sheet'])
+    #result = result.reset_index(drop=True)
+    #print(result)
 
     # get list of mapped sql statments as tuples
     #sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, db_schema=None, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
