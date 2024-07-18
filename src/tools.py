@@ -118,7 +118,7 @@ if __name__ == '__main__':
     tables, financial_quarter = main()
 
     for company in tables:
-        print(f"TABLES FOR {company}\n\n")
+        print(f"TABLES FOR: {company}\n\n")
         for doctype in tables[company]:
             result = pd.concat(tables[company][doctype])
             result = result.reset_index(drop=True)
