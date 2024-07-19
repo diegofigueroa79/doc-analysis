@@ -45,10 +45,10 @@ def build_tables_dict(llm, document):
     
     for page in document.pages:
         # what is the doc type and company name?
-        company_name = str([q.result for q in document.queries if q.query == QUERY_2][0])
+        company_name = str([q.result for q in page.queries if q.query == QUERY_2][0])
         if company_name not in doc_tables.keys():
             doc_tables[company_name] = {}
-        doc_type = str([q.result for q in document.queries if q.query == QUERY_1][0])
+        doc_type = str([q.result for q in page.queries if q.query == QUERY_1][0])
         if doc_type not in doc_tables.keys():
             doc_tables[company_name][doc_type] = []
         # extract tables
