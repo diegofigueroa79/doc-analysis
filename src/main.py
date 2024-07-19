@@ -2,8 +2,28 @@ import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 import pandas as pd
 import numpy as np
+from tools import main as extraction
 
 from data import getsql
+
+
+import argparse
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-d", "--demo", default="True")
+parser.add_argument("-a", "--adapter", default="False")
+parser.add_argument("-f", "--filename", default="balance-sheet-1.pdf")
+args = parser.parse_args()
+
+demo = True if args.demo == 'True' else False
+
+if demo:
+    adapter = True if args.adapter == 'True' else False
+    tables, financial_quarter = extraction(filename=args.filename, adapter=adapter)
+else:
+    doc_type = "Balance Sheet"
+    company_name = "Example Corporation"
+    financial_quarter = "Fourth Quarter"
 
 
 st.set_page_config(layout="wide")
@@ -17,9 +37,9 @@ with container_pdf:
 
 with container_data:
 
-    st.markdown("Document Type: `Balance Sheet`")
-    st.markdown("Company Name: `Example Corporation`")
-    st.markdown("Financial Quarter: `Fourth Quarter`")
+    st.markdown(f"Document Type: {doc_type}")
+    st.markdown(f"Company Name: {company_name}")
+    st.markdown(f"Financial Quarter: {financial_quarter}")
 
     tab1, tab2, tab3 = st.tabs(["Extracted Data", "Generated SQL", "Data Comparisons"])
 
