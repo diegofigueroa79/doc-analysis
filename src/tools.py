@@ -117,10 +117,10 @@ def main(filename, adapter):
 if __name__ == '__main__':
     adapter = True if args.adapter == 'True' else False
     tables, financial_quarter = main(filename=args.filename, adapter=adapter)
-
+    print(f"FINANCIAL QUARTER: {financial_quarter}")
     for company in tables:
         print("\n\n----------------------------------------")
-        print(f"TABLES FOR: {company}\n\n")
+        print(f"COMPANY NAME: {company}\n\n")
         for doctype in tables[company]:
             result = pd.concat(tables[company][doctype])
             result = result.reset_index(drop=True)
