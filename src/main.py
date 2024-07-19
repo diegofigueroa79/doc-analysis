@@ -7,6 +7,9 @@ from tools import main as extraction
 from data import getsql
 
 
+st.set_page_config(layout="wide")
+
+
 import argparse
 parser = argparse.ArgumentParser()
 
@@ -18,22 +21,20 @@ args = parser.parse_args()
 demo = True if args.demo == 'True' else False
 
 if demo:
-    adapter = True if args.adapter == 'True' else False
-    tables, financial_quarter = extraction(filename=args.filename, adapter=adapter)
-else:
     doc_type = "Balance Sheet"
     company_name = "Example Corporation"
     financial_quarter = "Fourth Quarter"
+else:
+    adapter = True if args.adapter == 'True' else False
+    tables, financial_quarter = extraction(filename=args.filename, adapter=adapter)
 
-
-st.set_page_config(layout="wide")
 
 st.header('Doc Analysis', divider='blue')
 
 container_pdf, container_data = st.columns(2)
 
 with container_pdf:
-    pdf_viewer("documents/balance-sheet-1.pdf", width=700)
+    pdf_viewer("../documents/balance-sheet-1.pdf", width=700)
 
 with container_data:
 
@@ -44,7 +45,7 @@ with container_data:
     tab1, tab2, tab3 = st.tabs(["Extracted Data", "Generated SQL", "Data Comparisons"])
 
     with tab1:
-        df = pd.read_csv("balance-sheet-1.csv", sep=',', names=["col1", "col2"])
+        df = pd.read_csv("../balance-sheet-1.csv", sep=',', names=["col1", "col2"])
         st.dataframe(df, width=700, height=700)
 
     with tab2:

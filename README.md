@@ -7,8 +7,8 @@
 
 ## Run
 ### Run Streamlit Demo
-- cd into root folder
-- run `streamlit run src/main.py`
+- cd into src folder
+- run `streamlit run main.py`
 ### Run tools.py
 - cd into src folder
 - run `python tools.py --adapter=False --filename=myfilename.pdf`
