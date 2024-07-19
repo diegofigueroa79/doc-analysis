@@ -119,6 +119,7 @@ if __name__ == '__main__':
     tables, financial_quarter = main(filename=args.filename, adapter=adapter)
 
     for company in tables:
+        print("\n\n----------------------------------------")
         print(f"TABLES FOR: {company}\n\n")
         for doctype in tables[company]:
             result = pd.concat(tables[company][doctype])
