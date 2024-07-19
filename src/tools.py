@@ -110,7 +110,7 @@ def connect_to_bedrock():
 def main(filename, adapter):
     load_dotenv()
     llm = connect_to_bedrock()
-    document = extract_document()
+    document = extract_document(filename=filename, adapter=adapter)
     tables = build_tables_dict(llm, document)
     return tables
 
