@@ -20,17 +20,17 @@ QUERY_1 = "Choose from the three types to answer the question: balance sheet, in
 QUERY_2 = "What is the company name?"
 QUERY_3 = "What is the month or date or year ended?"
 
-def extract_document(filename):
+def extract_document(filename, adapter):
     textract = boto3.client('textract', region_name=os.getenv('AWS_REGION'))
     q = tc.Query(text=QUERY_1, pages=["*"])
     q2 = tc.Query(text=QUERY_2, pages=["*"])
     q3 = tc.Query(text=QUERY_3, pages=["*"])
-    adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"]) if args.adapter == 'True' else None
+    adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"]) if adapter else None
     
     result = tc.call_textract(
         input_document=f"{os.getenv('S3_BUCKET_URL')}{filename}",
         queries_config=tc.QueriesConfig(queries=[q,q2,q3]),
-        adapters_config=tc.AdaptersConfig(adapters=[adapter]) if args.adapter == 'True' else None,
+        adapters_config=tc.AdaptersConfig(adapters=[adapter]) if adapter else None,
         features=[tc.Textract_Features.QUERIES, tc.Textract_Features.TABLES, tc.Textract_Features.LAYOUT],
         force_async_api=True,
         boto3_textract_client=textract
@@ -107,15 +107,16 @@ def connect_to_bedrock():
     llm = ChatBedrock(model_id=modelId, client=bedrock_runtime, model_kwargs={"temperature": 0,"top_k":250,"max_tokens":3000})
     return llm
 
-def main():
+def main(filename, adapter):
     load_dotenv()
     llm = connect_to_bedrock()
-    document = extract_document(filename=args.filename)
+    document = extract_document()
     tables = build_tables_dict(llm, document)
     return tables
 
 if __name__ == '__main__':
-    tables, financial_quarter = main()
+    adapter = True if args.adapter == 'True' else False
+    tables, financial_quarter = main(filename=args.filename, adapter=adapter)
 
     for company in tables:
         print(f"TABLES FOR: {company}\n\n")
