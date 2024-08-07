@@ -49,5 +49,5 @@ Task: Write SQL queries that retrieve values for each field from the schema prov
 Each SQL query should have a condition WHERE company_name = '{company_name}' AND financial_quarter = '{financial_quarter}'.
 Then match one SQL query to the field from the content provided.
 Provided the response as a tuple output as follows:
-("content field", "SQL Query")
+("content field", "schema field", "SQL Query")
 Provide the output in between <output> tags.

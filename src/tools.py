@@ -83,7 +83,7 @@ def parse_tuples(input_string):
     # Remove leading/trailing whitespace and split by newline
     lines = input_string.strip().split('\n')
     # Parse each line as a tuple
-    result = [tuple(line.strip('()').split(', ')) for line in lines]
+    result = [tuple(line.strip('(),').split(', ')) for line in lines]
     return result
 
 def generate_sql(llm, pd_table, db_schema, company_name, financial_quarter):
