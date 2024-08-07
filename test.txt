@@ -1,0 +1,30 @@
+sqlprompt = f"""
+Instructions: Use only the field names provided in the <content> tags to perform your task.
+<content>
+['current_assets', 'cash_equiv', 'short_term_invest', 'accounts_receivable', 'other_receivable']
+</content>
+
+<schema>
+['Current assets ', 'Cash and cash equivalents ',
+       'Short-term investments ', 'Accounts receivable - net ',
+       'Other receivables ']
+</schema>
+
+Task: Write SQL queries that retrieve values for each field from the schema provided.
+Each SQL query should have a condition WHERE company_name = 'sample company' AND financial_quarter = 'first_quarter'.
+Then match one SQL query to the field from the content provided.
+Provided the response as a tuple output as follows:
+("content field", "SQL Query")
+Provide the output in between <output> tags.
+"""
+
+import boto3
+
+client = boto3.client('bedrock-runtime', region_name='us-east-1')
+response = client.converse(
+    modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+    messages=[{'role': 'user', 'content': [{'text': sqlprompt}]}],
+    inferenceConfig={'temperature': 1}
+)
+
+print(response['output']['message']['content'][0]['text'])
