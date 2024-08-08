@@ -4,45 +4,7 @@ Instructions: Use only the field names provided in the <content> tags to perform
 </content>
 
 <schema>
-Field
------
-cash_and_equiv
-short_term_invest
-net_account_receiv
-inventory
-supplies
-total_current_assets
-investments
-land
-land_improvements
-buildings
-equipment
-accumulated_depreciation
-net_property
-goodwill
-other_intangible_assets
-total_intangible_assets
-other_assets
-total_assets
-short_term_loans_payable
-current_long_term_debt
-accounts_payable
-accrued_comp_benefits
-income_taxes_payable
-other_liabilities
-deferred_revenues
-total_current_liabilities
-notes_payable
-bonds_payable
-deferred_income_taxes
-total_longterm_liabilities
-total_liabilities
-common_stock
-retained_earnings
-other_comp_income
-treasury_stock
-total_stockholders_equity
-total_liabilities_stockholders_equity
+{schema}
 </schema>
 
 Task: Write SQL queries that retrieve values for each field from the schema provided.

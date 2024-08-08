@@ -2,35 +2,28 @@ import textractcaller as tc
 from textractor.parsers import response_parser
 from langchain_aws import ChatBedrock
 from langchain_core.prompts import PromptTemplate
-from dotenv import load_dotenv
 import pandas as pd
+import numpy as np
 import boto3
 import os
 import re
 
 
-import argparse
-parser = argparse.ArgumentParser()
-
-parser.add_argument("-a", "--adapter", default="False")
-parser.add_argument("-f", "--filename", default="balance-sheet-1.pdf")
-args = parser.parse_args()
 
 QUERY_1 = "Choose from the three types to answer the question: balance sheet, income, cash flow. What type is the document?"
 QUERY_2 = "What is the company name?"
 QUERY_3 = "What is the month or date or year ended?"
 
-def extract_document(filename, adapter):
-    textract = boto3.client('textract', region_name=os.getenv('AWS_REGION'))
+def extract_document(file_path):
+    textract = boto3.client('textract', region_name='us-east-1')
     q = tc.Query(text=QUERY_1, pages=["*"])
     q2 = tc.Query(text=QUERY_2, pages=["*"])
     q3 = tc.Query(text=QUERY_3, pages=["*"])
-    adapter = tc.Adapter(adapter_id=os.getenv("TEXTRACT_ADAPTER_ID"), version="1", pages=["*"]) if adapter else None
     
     result = tc.call_textract(
-        input_document=f"{os.getenv('S3_BUCKET_URL')}{filename}",
+        input_document=file_path,
         queries_config=tc.QueriesConfig(queries=[q,q2,q3]),
-        adapters_config=tc.AdaptersConfig(adapters=[adapter]) if adapter else None,
+        adapters_config=None,
         features=[tc.Textract_Features.QUERIES, tc.Textract_Features.TABLES, tc.Textract_Features.LAYOUT],
         force_async_api=True,
         boto3_textract_client=textract
@@ -79,60 +72,43 @@ def extract_output_text(input_text):
         return None
 
 def parse_tuples(input_string):
-    input_string = input_string.replace('"', '')
-    # Remove leading/trailing whitespace and split by newline
-    lines = input_string.strip().split('\n')
-    # Parse each line as a tuple
-    result = [tuple(line.strip('(),').split(', ')) for line in lines]
+    input_string = input_string.strip().split('\n')
+    result = []
+    for i in input_string:
+        i = i.strip('(),').split('"')
+        result.append([d for d in i if d != ',' and d != ''])
     return result
 
-def generate_sql(llm, pd_table, db_schema, company_name, financial_quarter):
+def generate_sql(llm, pd_table, db_path, company_name, financial_quarter):
     # get prompt
     template_text=open('prompt-sql.txt',"r").read()
     template = PromptTemplate.from_template(template_text)
+    # get schema
+    df = pd.read_csv(db_path, sep=',')
+    schema = df.iloc[:, 0].values
     # format prompt with table and schema
-    prompt = template.invoke(input={'content': pd_table, 'company_name': company_name, 'financial_quarter': financial_quarter})
+    prompt = template.invoke(input={'content': pd_table, 'schema': schema, 'company_name': company_name, 'financial_quarter': financial_quarter})
     # call llm
     response = llm.invoke(prompt)
     content = extract_output_text(response.content)
     sql_tuples_list = parse_tuples(content)
     return sql_tuples_list
 
+def database_retrieval(tuples_list, extracted_data, db_path):
+    database = pd.read_csv(db_path, sep=',', index_col=0)
+    final_df = pd.DataFrame(columns=np.arange(5))
+    for item in tuples_list:
+        extracted_vals = extracted_data.loc[item[0]].values.flatten()
+        db_vals = database.loc[item[1]].values.flatten()
+        final_df.loc[len(final_df.index)] = extracted_vals
+        final_df.loc[len(final_df.index)] = db_vals
+    return final_df
+
 def connect_to_bedrock():
     boto_session = boto3.Session()
-    bedrock_runtime = boto_session.client("bedrock-runtime", region_name=os.getenv('AWS_REGION'))
+    bedrock_runtime = boto_session.client("bedrock-runtime", region_name='us-east-1')
 
     modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
 
     llm = ChatBedrock(model_id=modelId, client=bedrock_runtime, model_kwargs={"temperature": 0,"top_k":250,"max_tokens":3000})
     return llm
-
-def main(filename, adapter):
-    load_dotenv()
-    llm = connect_to_bedrock()
-    document = extract_document(filename=filename, adapter=adapter)
-    tables = build_tables_dict(llm, document)
-    return tables
-
-if __name__ == '__main__':
-    adapter = True if args.adapter == 'True' else False
-    tables, financial_quarter = main(filename=args.filename, adapter=adapter)
-    print(f"FINANCIAL QUARTER: {financial_quarter}")
-    for company in tables:
-        print("\n\n----------------------------------------")
-        print(f"COMPANY NAME: {company}\n\n")
-        for doctype in tables[company]:
-            result = pd.concat(tables[company][doctype])
-            result = result.reset_index(drop=True)
-            print(f"DOCUMENT TYPE: {doctype}\n")
-            print(result)
-    # grab demo data and concat into one table
-    #result = pd.concat(tables['Example Corporation']['Balance Sheet'])
-    #result = result.reset_index(drop=True)
-    #print(result)
-
-    # get list of mapped sql statments as tuples
-    #sql_list = generate_sql(llm=llm, pd_table=result.iloc[:, 0].values, db_schema=None, company_name='Example Corporation', financial_quarter=tables['financial_quarter'])
-
-    # execute sql statments with database
-    # return one final table

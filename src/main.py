@@ -2,31 +2,25 @@ import streamlit as st
 from streamlit_pdf_viewer import pdf_viewer
 import pandas as pd
 import numpy as np
-from tools import main as extraction
+from tools import connect_to_bedrock, extract_document, build_tables_dict, generate_sql, database_retrieval
 
 from data import getsql
 
 
 st.set_page_config(layout="wide")
 
+FILEPATH = 'balance-sheet-1.pdf'
+COMPANY_NAME = 'Example Corporation'
+DOC_TYPE = 'Consolidating Balance Sheet'
+CSV_PATH = 'path.csv'
 
-import argparse
-parser = argparse.ArgumentParser()
-
-parser.add_argument("-d", "--demo", default="True")
-parser.add_argument("-a", "--adapter", default="False")
-parser.add_argument("-f", "--filename", default="balance-sheet-1.pdf")
-args = parser.parse_args()
-
-demo = True if args.demo == 'True' else False
-
-if demo:
-    doc_type = "Balance Sheet"
-    company_name = "Example Corporation"
-    financial_quarter = "Fourth Quarter"
-else:
-    adapter = True if args.adapter == 'True' else False
-    tables, financial_quarter = extraction(filename=args.filename, adapter=adapter)
+llm = connect_to_bedrock()
+document = extract_document(file_path=FILEPATH)
+tables, financial_quarter = build_tables_dict(llm, document)
+table = pd.concat(tables[COMPANY_NAME][DOC_TYPE])
+table = table.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+table = table.set_index(table.columns[0])
+sql_list = generate_sql(llm=llm, pd_table=table, db_path=CSV_PATH, company_name=COMPANY_NAME, financial_quarter=financial_quarter)
 
 
 st.header('Doc Analysis', divider='blue')
@@ -34,46 +28,27 @@ st.header('Doc Analysis', divider='blue')
 container_pdf, container_data = st.columns(2)
 
 with container_pdf:
-    pdf_viewer("../documents/balance-sheet-1.pdf", width=700)
+    pdf_viewer(FILEPATH, width=700)
 
 with container_data:
 
-    st.markdown(f"Document Type: {doc_type}")
-    st.markdown(f"Company Name: {company_name}")
+    st.markdown(f"Document Type: {DOC_TYPE}")
+    st.markdown(f"Company Name: {COMPANY_NAME}")
     st.markdown(f"Financial Quarter: {financial_quarter}")
 
     tab1, tab2, tab3 = st.tabs(["Extracted Data", "Generated SQL", "Data Comparisons"])
 
     with tab1:
-        df = pd.read_csv("../balance-sheet-1.csv", sep=',', names=["col1", "col2"])
-        st.dataframe(df, width=700, height=700)
+        st.dataframe(table, width=700, height=700)
 
     with tab2:
         st.markdown("*Individual SQL statements for demo purposes*")
-        tuples = getsql()
         code = ""
-        for t in tuples:
+        for t in sql_list:
             code += t[1] + '\n\n'
         st.code(code, language='sql')
     
     with tab3:
-        results_df = pd.DataFrame(columns=['fieldname', 'document', 'database'])
-        for t in tuples:
-            value = df.loc[df['col1'] == t[0]].values[0][1]
-            row = [t[0], value, value]
-            results_df.loc[len(results_df.index)] = row
-        
-        # add some wrong values for demo
-        results_df.iloc[4,2] = '4,000'
-        results_df.iloc[13,2] = '50,000'
-        results_df.iloc[16,2] = '75,000'
+        results_df = database_retrieval(tuples_list=sql_list, extracted_data=table, db_path=CSV_PATH)
 
-        # highlight mismatched values
-        def custom_style(row):
-            if row.values[-1] != row.values[-2]:
-                color = 'tomato'
-                return ['background-color: %s' % color]*len(row.values)
-            else:
-                return ['']*len(row.values)
-
-        st.dataframe(results_df.style.apply(custom_style, axis=1), width=700, height=700)
+        st.dataframe(results_df, width=700, height=700)
