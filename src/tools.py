@@ -98,10 +98,10 @@ def database_retrieval(tuples_list, extracted_data, db_path):
     database = pd.read_csv(db_path, sep=',', index_col=0)
     final_df = pd.DataFrame(columns=np.arange(5))
     for item in tuples_list:
-        extracted_vals = extracted_data.loc[item[0]].values.flatten()
-        db_vals = database.loc[item[1]].values.flatten()
-        final_df.loc[len(final_df.index)] = extracted_vals
-        final_df.loc[len(final_df.index)] = db_vals
+        extracted_vals = extracted_data.loc[item[0]].values.flatten().tolist()
+        db_vals = database.loc[item[1]].values.flatten().tolist()
+        final_df.loc[len(final_df.index)] = item[0] + extracted_vals
+        final_df.loc[len(final_df.index)] = item[1] + db_vals
     return final_df
 
 def connect_to_bedrock():
