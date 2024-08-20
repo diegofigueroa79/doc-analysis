@@ -19,15 +19,18 @@ mapping = [
 def database_retrieval(tuples_list, extracted_data, db_path):
     #database = pd.read_csv(db_path, sep=',', index_col=0)
     database = db_path
-    columns = [item for items in zip(extracted_data.columns, database.columns) for item in items]
-    final_df = pd.DataFrame(columns=columns)
 
     # remove special characters and convert string numbers to numbers
     extracted_data = extracted_data.apply(lambda x: x.str.replace(',', ''))
     extracted_data = extracted_data.apply(lambda x: x.str.replace('(', '-'))
     extracted_data = extracted_data.apply(lambda x: x.str.replace(')', ''))
     extracted_data = extracted_data.replace({"": np.nan, "-": np.nan})
+    extracted_data.columns = extracted_data.iloc[0]
+    extracted_data = extracted_data.drop("")
     extracted_data = extracted_data.apply(pd.to_numeric)
+
+    columns = [item for items in zip(extracted_data.columns, database.columns) for item in items]
+    final_df = pd.DataFrame(columns=columns)
 
     for item in tuples_list:
         if len(item) < 3:

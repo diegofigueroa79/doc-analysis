@@ -49,6 +49,17 @@ with container_data:
         st.code(code, language='sql')
     
     with tab3:
+        # highlight mismatched values
+        def custom_style(row):
+            styles = []
+            for i in range(0,len(row),2):
+                styles.append('')
+                if row.values[i] == row.values[i+1]:
+                    styles.append('background-color: tomato')
+                else:
+                    styles.append('')
+            return styles
+
         results_df = database_retrieval(tuples_list=sql_list, extracted_data=table, db_path=CSV_PATH)
 
-        st.dataframe(results_df, width=700, height=700)
+        st.dataframe(results_df.style.apply(custom_style, axis=1), width=700, height=700)
