@@ -35,13 +35,21 @@ def extract_document(file_path):
 def build_tables_dict(llm, document):
     doc_tables = {}
     financial_quarter = get_financial_quarter(llm, str([q.result for q in document.queries if q.query == QUERY_3][0]))
-    
+    i = 0
     for page in document.pages:
+        if not page.tables:
+            continue
         # what is the doc type and company name?
         company_name = str([q.result for q in page.queries if q.query == QUERY_2][0])
+        if not company_name:
+            i += 1
+            company_name = company_name + f"-{i}"
         if company_name not in doc_tables.keys():
             doc_tables[company_name] = {}
         doc_type = str([q.result for q in page.queries if q.query == QUERY_1][0])
+        if not doc_type:
+            i += 1
+            doc_type = doc_type + f"-{i}"
         if doc_type not in doc_tables.keys():
             doc_tables[company_name][doc_type] = []
         # extract tables
@@ -76,7 +84,7 @@ def parse_tuples(input_string):
     result = []
     for i in input_string:
         i = i.strip('(),').split('"')
-        result.append([d for d in i if d != ',' and d != ''])
+        result.append([d for d in i if d != ', ' and d != ''])
     return result
 
 def generate_sql(llm, pd_table, db_path, company_name, financial_quarter):
@@ -85,9 +93,9 @@ def generate_sql(llm, pd_table, db_path, company_name, financial_quarter):
     template = PromptTemplate.from_template(template_text)
     # get schema
     df = pd.read_csv(db_path, sep=',')
-    schema = df.iloc[:, 0].values
+    schema = df.iloc[:, 1].values
     # format prompt with table and schema
-    prompt = template.invoke(input={'content': pd_table, 'schema': schema, 'company_name': company_name, 'financial_quarter': financial_quarter})
+    prompt = template.invoke(input={'content': pd_table.index, 'schema': schema, 'company_name': company_name, 'financial_quarter': financial_quarter})
     # call llm
     response = llm.invoke(prompt)
     content = extract_output_text(response.content)
@@ -96,12 +104,44 @@ def generate_sql(llm, pd_table, db_path, company_name, financial_quarter):
 
 def database_retrieval(tuples_list, extracted_data, db_path):
     database = pd.read_csv(db_path, sep=',', index_col=0)
-    final_df = pd.DataFrame(columns=np.arange(5))
+
+    # remove special characters and convert string numbers to numbers
+    extracted_data = extracted_data.apply(lambda x: x.str.replace(',', ''))
+    extracted_data = extracted_data.apply(lambda x: x.str.replace('(', '-'))
+    extracted_data = extracted_data.apply(lambda x: x.str.replace(')', ''))
+    extracted_data = extracted_data.apply(lambda x: x.str.replace('$', ''))
+    extracted_data = extracted_data.replace({"": np.nan, "-": np.nan})
+    extracted_data = extracted_data.apply(pd.to_numeric)
+    print(extracted_data.index)
+
+    columns = []
+    for column in extracted_data.columns:
+        columns.append(column)
+        columns.append(str(column) + '-db')
+
+    final_df = pd.DataFrame(columns=columns)
     for item in tuples_list:
+        if len(item) < 3:
+            continue
+        try:
+            extracted_vals = extracted_data.loc[item[0]].values.flatten().tolist()
+            db_vals = extracted_vals
+            concat_values = [x for y in zip(extracted_vals, db_vals) for x in y]
+            final_df.loc[item[0]] = concat_values
+        except:
+            pass
+    '''
+    columns = [item for items in zip(extracted_data.columns, database.columns) for item in items]
+    final_df = pd.DataFrame(columns=columns)
+    
+    for item in tuples_list:
+        if len(item) < 3:
+            continue
         extracted_vals = extracted_data.loc[item[0]].values.flatten().tolist()
         db_vals = database.loc[item[1]].values.flatten().tolist()
-        final_df.loc[len(final_df.index)] = item[0] + extracted_vals
-        final_df.loc[len(final_df.index)] = item[1] + db_vals
+        concat_values = [x for y in zip(extracted_vals, db_vals) for x in y]
+        final_df.loc[item[0]] = concat_values
+    '''
     return final_df
 
 def connect_to_bedrock():
