@@ -1,0 +1,5 @@
+Instructions: Use only the content provided in the <content> tags to perform your task.
+<content>
+{content}
+</content>
+Task: Choose from the three types to answer the question: balance sheet, income, cash flow. What type is the document? Provide the output in between <output> tags.

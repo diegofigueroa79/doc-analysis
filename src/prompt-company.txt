@@ -1,0 +1,5 @@
+Instructions: Use only the content provided in the <content> tags to perform your task.
+<content>
+{content}
+</content>
+Task: What is the company name? Provide the output in between <output> tags.

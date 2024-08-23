@@ -41,15 +41,13 @@ def build_tables_dict(llm, document):
             continue
         # what is the doc type and company name?
         company_name = str([q.result for q in page.queries if q.query == QUERY_2][0])
-        if not company_name:
-            i += 1
-            company_name = company_name + f"-{i}"
+        if company_name == 'None':
+            company_name = get_company_name(llm, page)
         if company_name not in doc_tables.keys():
             doc_tables[company_name] = {}
         doc_type = str([q.result for q in page.queries if q.query == QUERY_1][0])
-        if not doc_type:
-            i += 1
-            doc_type = doc_type + f"-{i}"
+        if doc_type == 'None':
+            doc_type = get_document_type(llm, page)
         if doc_type not in doc_tables.keys():
             doc_tables[company_name][doc_type] = []
         # extract tables
@@ -57,6 +55,28 @@ def build_tables_dict(llm, document):
             doc_tables[company_name][doc_type].append(table.to_pandas())
 
     return doc_tables, financial_quarter
+
+def get_company_name(llm, page):
+    # get prompt
+    template_text=open('prompt-company.txt',"r").read()
+    template = PromptTemplate.from_template(template_text)
+    # format prompt with table and schema
+    prompt = template.invoke(input={'content': page.get_text()})
+    # call llm
+    response = llm.invoke(prompt)
+    content = extract_output_text(response.content)
+    return content
+
+def get_document_type(llm, page):
+    # get prompt
+    template_text=open('prompt-doctype.txt',"r").read()
+    template = PromptTemplate.from_template(template_text)
+    # format prompt with table and schema
+    prompt = template.invoke(input={'content': page.get_text()})
+    # call llm
+    response = llm.invoke(prompt)
+    content = extract_output_text(response.content)
+    return content
 
 def get_financial_quarter(llm, date):
     # get prompt
