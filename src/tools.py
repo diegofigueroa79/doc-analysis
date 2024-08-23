@@ -131,8 +131,7 @@ def database_retrieval(tuples_list, extracted_data, db_path):
     extracted_data = extracted_data.apply(lambda x: x.str.replace(')', ''))
     extracted_data = extracted_data.apply(lambda x: x.str.replace('$', ''))
     extracted_data = extracted_data.replace({"": np.nan, "-": np.nan})
-    extracted_data = extracted_data.apply(pd.to_numeric)
-    print(extracted_data.index)
+    extracted_data = extracted_data.apply(lambda x: pd.to_numeric(x, errors='coerce'))
 
     columns = []
     for column in extracted_data.columns:
@@ -168,7 +167,7 @@ def connect_to_bedrock():
     boto_session = boto3.Session()
     bedrock_runtime = boto_session.client("bedrock-runtime", region_name='us-east-1')
 
-    modelId = "anthropic.claude-3-5-sonnet-20240620-v1:0"
+    modelId = "anthropic.claude-3-sonnet-20240229-v1:0"
 
     llm = ChatBedrock(model_id=modelId, client=bedrock_runtime, model_kwargs={"temperature": 0,"top_k":250,"max_tokens":3000})
     return llm
