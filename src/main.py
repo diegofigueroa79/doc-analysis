@@ -79,8 +79,10 @@ with container_data:
                 styles.append('')
                 if row.values[i] == row.values[i+1]:
                     styles.append('')
-                elif row.values[i] != None:
+                elif not np.isnan(row.values[i]):
                     styles.append('background-color: tomato')
+                else:
+                    styles.append('')
             return styles
 
         comparison_dfs = []
