@@ -35,7 +35,6 @@ def extract_document(file_path):
 def build_tables_dict(llm, document):
     doc_tables = {}
     financial_quarter = get_financial_quarter(llm, str([q.result for q in document.queries if q.query == QUERY_3][0]))
-    i = 0
     for page in document.pages:
         if not page.tables:
             continue
@@ -113,7 +112,7 @@ def generate_sql(llm, pd_table, db_path, company_name, financial_quarter):
     template = PromptTemplate.from_template(template_text)
     # get schema
     df = pd.read_csv(db_path, sep=',')
-    schema = df.iloc[:, 1].values
+    schema = df.iloc[:, 0].values
     # format prompt with table and schema
     prompt = template.invoke(input={'content': pd_table.index, 'schema': schema, 'company_name': company_name, 'financial_quarter': financial_quarter})
     # call llm
