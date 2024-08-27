@@ -13,13 +13,14 @@ S3FILEPATH = "s3://financial-statement-extraction/combined-statements.pdf"
 LOCALFILEPATH = '../documents/combined-statements.pdf'
 COMPANY_NAME = 'Example Corporation'
 DOC_TYPE = 'Consolidating Balance Sheet'
-CSV_PATH = '../balance-sheet-1.csv'
+CSV_PATH = ['../page1.csv', '../page2.csv', '../page3.csv']
 
 llm = connect_to_bedrock()
 document = extract_document(file_path=S3FILEPATH)
 tables, financial_quarter = build_tables_dict(llm, document)
 sql_lists = []
 tables_list = []
+k = 0
 for company in tables:
     for doctype in tables[company]:
         table = pd.concat(tables[company][doctype])
@@ -34,10 +35,15 @@ for company in tables:
             table = table.drop(table.index[0])
         
         table = table.set_index(table.columns[0])
+        table.index = table.index + table.groupby(level=0).cumcount().astype(str).replace('0','')
         tables[company][doctype] = table
-        sql_list = generate_sql(llm=llm, pd_table=table, db_path=CSV_PATH, company_name=company, financial_quarter=financial_quarter)
-        sql_lists.append(sql_list)
-        tables_list.append(table)
+        try:
+            sql_list = generate_sql(llm=llm, pd_table=table, db_path=CSV_PATH[k], company_name=company, financial_quarter=financial_quarter)
+            sql_lists.append(sql_list)
+            tables_list.append(table)
+            k += 1
+        except:
+            pass
 
 st.header('Doc Analysis', divider='blue')
 
@@ -87,7 +93,7 @@ with container_data:
 
         comparison_dfs = []
         for i in range(len(sql_lists)):
-            comparison_dfs.append(database_retrieval(tuples_list=sql_lists[i], extracted_data=tables_list[i], db_path=CSV_PATH))
+            comparison_dfs.append(database_retrieval(tuples_list=sql_lists[i], extracted_data=tables_list[i], db_path=CSV_PATH[i]))
 
         for df in comparison_dfs:
             df.loc[df.index[0], df.columns[0]] = 3000000
