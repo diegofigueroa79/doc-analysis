@@ -54,8 +54,7 @@ with container_pdf:
 
 with container_data:
 
-    st.markdown(f"Document Type: {DOC_TYPE}")
-    st.markdown(f"Company Name: {COMPANY_NAME}")
+    st.markdown(f"Company Name: {list(tables.keys())[0]}")
     st.markdown(f"Financial Quarter: {financial_quarter}")
 
     tab1, tab2, tab3 = st.tabs(["Extracted Data", "Generated SQL", "Data Comparisons"])
