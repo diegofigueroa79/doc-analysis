@@ -36,6 +36,8 @@ def build_tables_dict(llm, document):
     doc_tables = {}
     financial_quarter = get_financial_quarter(llm, str([q.result for q in document.queries if q.query == QUERY_3][0]))
     for page in document.pages:
+        if is_table_of_contents(llm, page):
+            continue
         if not page.tables:
             continue
         # what is the doc type and company name?
@@ -54,6 +56,17 @@ def build_tables_dict(llm, document):
             doc_tables[company_name][doc_type].append(table.to_pandas())
 
     return doc_tables, financial_quarter
+
+def is_table_of_contents(llm, page):
+    # get prompt
+    template_text=open('prompt-tableofcontents.txt',"r").read()
+    template = PromptTemplate.from_template(template_text)
+    # format prompt with table and schema
+    prompt = template.invoke(input={'content': page.get_text()})
+    # call llm
+    response = llm.invoke(prompt)
+    content = extract_output_text(response.content)
+    return content
 
 def get_company_name(llm, page):
     # get prompt

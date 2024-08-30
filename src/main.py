@@ -9,8 +9,8 @@ from data import getsql
 
 st.set_page_config(layout="wide")
 
-S3FILEPATH = "s3://financial-statement-extraction/combined-statements.pdf"
-LOCALFILEPATH = '../documents/combined-statements.pdf'
+S3FILEPATH = "s3://financial-statement-extraction/combined-statements_merged.pdf"
+LOCALFILEPATH = '../documents/combined-statements_merged.pdf'
 COMPANY_NAME = 'Example Corporation'
 DOC_TYPE = 'Consolidating Balance Sheet'
 CSV_PATH = ['../page1.csv', '../page2.csv', '../page3.csv']

@@ -1,0 +1,7 @@
+Instructions: Use only the content provided in the <content> tags to perform your task.
+<content>
+{content}
+</content>
+Task: Is the content provided a table of contents? Answer yes or no.
+Provide the output in between <output> tags.
+Only provide a response, do not give a description.
