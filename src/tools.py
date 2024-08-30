@@ -36,7 +36,7 @@ def build_tables_dict(llm, document):
     doc_tables = {}
     financial_quarter = get_financial_quarter(llm, str([q.result for q in document.queries if q.query == QUERY_3][0]))
     for page in document.pages:
-        if is_table_of_contents(llm, page):
+        if is_table_of_contents(llm, page) == 'yes':
             continue
         if not page.tables:
             continue
@@ -66,6 +66,7 @@ def is_table_of_contents(llm, page):
     # call llm
     response = llm.invoke(prompt)
     content = extract_output_text(response.content)
+    print('this is the content: ' + content)
     return content
 
 def get_company_name(llm, page):
